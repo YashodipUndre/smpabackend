@@ -116,7 +116,7 @@ server.post('/upload', upload.single('csvfile'), (req, res) => {
             .on('error', (err) => {
                 console.error('Error reading the CSV file:', err);
                 res.status(500).json({ error: 'Error reading the CSV file', message: err.message });
-            });
+            }); 
     }
 
 });
