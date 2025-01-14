@@ -9,6 +9,12 @@ import { fileURLToPath } from 'url';
 
 dotenv.config();
 const server = express();
+server.use(cors({
+    origin: 'https://smpafrontend.vercel.app', // Allow this frontend URL
+    methods: ['GET', 'POST', 'OPTIONS'], // Include OPTIONS method for preflight requests
+    allowedHeaders: ['Content-Type', 'Authorization'], // Allow headers like Content-Type and Authorization
+    credentials: true, // Enable cookies if needed
+  }));
 const upload = multer({ dest: 'uploads/' });
 
 // Define __dirname for ES Modules
@@ -16,7 +22,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // CORS Setup
-server.use(cors());
 
 // Middleware
 server.use(bodyParser.json());
