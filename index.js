@@ -11,7 +11,7 @@ import path from 'path';
 dotenv.config();
 const upload = multer({ dest: 'uploads/' });
 server.use(bodyParser.json())
-server.use(cors());
+server.use(cors({ origin: 'https://smpafrontend.vercel.app/' }));
 //DB_Connection
 import { fileURLToPath } from 'url';
 
