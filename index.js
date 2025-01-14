@@ -16,11 +16,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // CORS Setup
-server.use(cors({ 
-    origin: 'https://smpafrontend.vercel.app', 
-    methods: ['GET', 'POST'], 
-    credentials: true 
-}));
+server.use(cors());
 
 // Middleware
 server.use(bodyParser.json());
