@@ -6,12 +6,24 @@ import multer from 'multer';
 import csv from 'csv-parser';
 import dotenv from 'dotenv'
 import fs from 'fs'
+import path from 'path';
 //env configaration
 dotenv.config();
 const upload = multer({ dest: 'uploads/' });
 server.use(bodyParser.json())
 server.use(cors());
 //DB_Connection
+import { fileURLToPath } from 'url';
+
+// Define __dirname for ES Modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+server.use(express.static(path.join(__dirname, 'public')));
+
+// Example route
+server.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 server.post('/AIDATA', async (req, res) => {
     try {
         // Validate the incoming data
