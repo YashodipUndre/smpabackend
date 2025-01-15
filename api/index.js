@@ -77,6 +77,5 @@ server.post('/AIDATA', async (req, res) => {
 });
 
 // Export the server as a handler for Vercel
-export default (req, res) => {
-    server(req, res);  // Delegate to the Express app
-  };
+server.listen(8080);
+console.log('server started')
