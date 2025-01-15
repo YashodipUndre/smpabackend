@@ -1,74 +1,89 @@
 import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
-import multer from 'multer';
 import dotenv from 'dotenv';
-import fs from 'fs';
+import fetch from 'node-fetch'; // Make sure node-fetch is installed
 import path from 'path';
 import { fileURLToPath } from 'url';
 
 dotenv.config();
 const server = express();
+
+// CORS options
 const corsOptions = {
-    origin: 'https://smpafrontend.vercel.app', // Your React app's origin
-    credentials: true,              // This sets `Access-Control-Allow-Credentials: true`
-  };
+  origin: 'https://smpafrontend.vercel.app', // Your React app's origin
+  credentials: true,  // This sets `Access-Control-Allow-Credentials: true`
+};
+
+// Enable CORS with the options
 server.use(cors(corsOptions));
 
-// CORS Setup
+// Middleware for parsing JSON body
+server.use(bodyParser.json());
 
-// Middleware
+// CORS Preflight Request Handling
+server.options('/AIDATA', (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', 'https://smpafrontend.vercel.app');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.sendStatus(204); // Respond with no content for OPTIONS
+});
 
 // Root route
 server.get('/', (req, res) => {
-    res.json("Hello");
+  res.json("Hello");
 });
 
-// AIDATA route
+// AIDATA route for processing POST requests
 server.post('/AIDATA', async (req, res) => {
-    try {
-        const inputData = req.body.data;
-        if (!inputData) {
-            return res.status(400).json({ error: "Missing 'data' in request body" });
-        }
-
-        const response = await fetch(`${process.env.URLL}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${process.env.AIAPI}`,
-            },
-            body: JSON.stringify({
-                input_value: inputData,
-                output_type: "chat",
-                input_type: "chat",
-            }),
-        });
-
-        if (!response.ok) {
-            console.error('API Error:', response.status);
-            return res.status(response.status).json({ error: 'API request failed' });
-        }
-
-        const responseData = await response.json();
-        const textData = responseData.outputs[0]?.outputs[0]?.results?.text?.data?.text;
-
-        if (!textData) {
-            return res.status(500).json({ error: "Unexpected API response format" });
-        }
-        res.setHeader('Access-Control-Allow-Origin', 'https://smpafrontend.vercel.app');
-        res.setHeader('Access-Control-Allow-Credentials', 'true');
-        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-        res.json(textData);
-    } catch (error) {
-        console.error('Server Error:', error);
-        res.status(500).json({ error: 'Internal server error' });
+  try {
+    const inputData = req.body.data;
+    if (!inputData) {
+      return res.status(400).json({ error: "Missing 'data' in request body" });
     }
+
+    const response = await fetch(`${process.env.URLL}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.AIAPI}`,
+      },
+      body: JSON.stringify({
+        input_value: inputData,
+        output_type: "chat",
+        input_type: "chat",
+      }),
+    });
+
+    if (!response.ok) {
+      console.error('API Error:', response.status);
+      return res.status(response.status).json({ error: 'API request failed' });
+    }
+
+    const responseData = await response.json();
+    const textData = responseData.outputs[0]?.outputs[0]?.results?.text?.data?.text;
+
+    if (!textData) {
+      return res.status(500).json({ error: "Unexpected API response format" });
+    }
+
+    // Set CORS headers
+    res.setHeader('Access-Control-Allow-Origin', 'https://smpafrontend.vercel.app');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+    // Send the response
+    res.json(textData);
+  } catch (error) {
+    console.error('Server Error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 // Start server
 const PORT = process.env.PORT || 8080;
 server.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
 });
