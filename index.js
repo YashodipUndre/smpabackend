@@ -56,6 +56,10 @@ server.post('/AIDATA', async (req, res) => {
         if (!textData) {
             return res.status(500).json({ error: "Unexpected API response format" });
         }
+        res.setHeader('Access-Control-Allow-Origin', 'https://smpafrontend.vercel.app');
+        res.setHeader('Access-Control-Allow-Credentials', 'true');
+        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
         res.json(textData);
     } catch (error) {
         console.error('Server Error:', error);
