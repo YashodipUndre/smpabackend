@@ -9,27 +9,19 @@ import { fileURLToPath } from 'url';
 
 dotenv.config();
 const server = express();
-server.use(cors({
-    origin: 'https://smpafrontend.vercel.app', // Allow this frontend URL
-    methods: ['GET', 'POST', 'OPTIONS'], // Include OPTIONS method for preflight requests
-    allowedHeaders: ['Content-Type', 'Authorization'], // Allow headers like Content-Type and Authorization
-    credentials: true, // Enable cookies if needed
-  }));
-const upload = multer({ dest: 'uploads/' });
-
-// Define __dirname for ES Modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const corsOptions = {
+    origin: 'https://smpafrontend.vercel.app', // Your React app's origin
+    credentials: true,              // This sets `Access-Control-Allow-Credentials: true`
+  };
+server.use(cors(corsOptions));
 
 // CORS Setup
 
 // Middleware
-server.use(bodyParser.json());
-server.use(express.static(path.join(__dirname, 'public')));
 
 // Root route
 server.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.json("Hello");
 });
 
 // AIDATA route
@@ -64,7 +56,6 @@ server.post('/AIDATA', async (req, res) => {
         if (!textData) {
             return res.status(500).json({ error: "Unexpected API response format" });
         }
-        res.setHeader('Access-Control-Allow-Origin', 'https://smpafrontend.vercel.app');
         res.json(textData);
     } catch (error) {
         console.error('Server Error:', error);
