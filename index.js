@@ -65,5 +65,8 @@ server.post('/AIDATA', async (req, res) => {
 });
 
 // Export the server as a handler for Vercel
-server.listen(8080);
-console.log('server started')
+const HOST = process.env.HOST || '0.0.0.0';
+const PORT = process.env.PORT || 10000;
+server.listen(PORT, HOST, () => {
+  console.log(`Server running at http://${HOST}:${PORT}/`);
+});
