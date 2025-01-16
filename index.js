@@ -4,31 +4,19 @@ import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
 import fetch from 'node-fetch'; // Ensure node-fetch is installed
 
-
 dotenv.config();
 
 const server = express();
 
 // CORS options
-const corsOptions = {
-  origin: 'https://smpafrontend.vercel.app', // Your React app's origin
-  credentials: true,  // This sets `Access-Control-Allow-Credentials: true`
-};
 
 // Enable CORS with the options
-server.use(cors(corsOptions));
+server.use(cors());
 
 // Middleware for parsing JSON body
 server.use(bodyParser.json());
 
-// CORS Preflight Request Handling
-server.options('/AIDATA', (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', 'https://smpafrontend.vercel.app');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.sendStatus(204); // Respond with no content for OPTIONS
-});
+// CORS Preflight Request Handlin
 
 // Root route
 server.get('/', (req, res) => {
