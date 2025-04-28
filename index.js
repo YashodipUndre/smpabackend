@@ -26,7 +26,7 @@ server.get('/', (req, res) => {
 });
 const upload = multer({ dest: "uploads/" });
 
-app.post("/Content", upload.single("image"), (req, res) => {
+server.post("/Content", upload.single("image"), (req, res) => {
     if (!req.file) {
         return res.status(400).json({ message: "No file uploaded" });
     }
@@ -76,7 +76,7 @@ server.post('/AIDATA', async (req, res) => {
 
 // Export the server as a handler for Vercel
 const HOST = process.env.HOST || '0.0.0.0';
-const PORT = process.env.PORT || 10000;
+const PORT = process.env.PORT || 8080;
 server.listen(PORT, HOST, () => {
   console.log(`Server running at http://${HOST}:${PORT}/`);
 });
