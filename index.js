@@ -20,49 +20,30 @@ const embeddings = new GoogleGenerativeAIEmbeddings({
 });
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
-const model = genAI.getGenerativeModel({
-  model: "gemini-3-flash-preview",
-});
 
-// const rawText = fs.readFileSync("extended_social_media_dataset.csv", "utf8");
+// Fallback model list — each model gets ~20 free requests/day
+const GEMINI_MODELS = [
+  "gemini-3.1-flash-lite",
+  "gemini-3.5-flash",
+  "gemini-3-flash-preview",
+  "gemini-2.5-flash-lite",
+  "gemini-2.5-flash",
+];
 
-// // ------------------------------------------------------
-// // 3. SPLIT TEXT INTO CHUNKS
-// // ------------------------------------------------------
-// const splitter = new RecursiveCharacterTextSplitter({
-//   chunkSize: 1000,
-//   chunkOverlap: 200,
-// });
-
-// const chunks = await splitter.splitText(rawText);
-// // ------------------------------------------------------
-// // 4. ASTRA DB VECTORSTORE (correct package!)
-// // ------------------------------------------------------
-// // ------------------------------------------------------
-// // 4. ASTRA DB VECTORSTORE (CORRECT VERSION)
-// // ------------------------------------------------------
-
-// // 1️⃣ Create vector store WITHOUT creating collection
-// // 4. ASTRA DB VECTORSTORE (CORRECT)
-// const vectorStore = await AstraDBVectorStore.fromTexts(
-//   chunks,                            // array of text chunks
-//   chunks.map(() => ({ source: "csv" })), // metadata array
-//   embeddings,
-//   {
-//     token: process.env.ASTRA_DB_APPLICATION_TOKEN,
-//     endpoint: process.env.ASTRA_DB_ENDPOINT,
-//     collection: process.env.ASTRA_DB_COLLECTION,
-//     keyspace: process.env.ASTRA_DB_KEYSPACE,
-//     collectionOptions: {
-//       vector: {
-//         dimension: 3072,
-//         metric: "cosine"
-//       }
-//     }
-//   }
-// );
-
-
+async function generateWithFallback(prompt) {
+  for (const modelName of GEMINI_MODELS) {
+    try {
+      const model = genAI.getGenerativeModel({ model: modelName });
+      const response = await model.generateContent(prompt);
+      console.log(`✅ Used model: ${modelName}`);
+      return response.response.text();
+    } catch (err) {
+      console.warn(`⚠️ Model ${modelName} failed: ${err.message}`);
+      continue;
+    }
+  }
+  return "All AI models are currently at their daily limit. Please try again tomorrow.";
+}
 
 // Root route
 // // AIDATA route for processing POST requests
@@ -85,9 +66,7 @@ User question: ${inputData}
 Based on the context, answer accurately. and also add that should people use this content type for there bussiness growth and why
 `;
 
-      const response = await model.generateContent(prompt);
-    // ------------------------------------------------------
-      const text = response.response.text();
+      const text = await generateWithFallback(prompt);
       console.log(text);
 
     // Send the result back to the client
