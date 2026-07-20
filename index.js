@@ -45,6 +45,12 @@ async function generateWithFallback(prompt) {
   return "All AI models are currently at their daily limit. Please try again tomorrow.";
 }
 
+let isVectorStoreInitialized = false;
+
+server.get('/', (req, res) => {
+  res.send('Node backend is running!');
+});
+
 // Root route
 // // AIDATA route for processing POST requests
 server.post('/AIDATA', async (req, res) => {
@@ -53,6 +59,12 @@ server.post('/AIDATA', async (req, res) => {
     if (!inputData) {
       return res.status(400).json({ error: "Missing 'data' in request body" });
     }
+
+    if (!isVectorStoreInitialized) {
+      await vectorStore.initialize();
+      isVectorStoreInitialized = true;
+    }
+
       const results = await vectorStore.similaritySearch(inputData, 5);
 
       const context = results.map(r => r.pageContent).join("\n\n");
@@ -77,15 +89,12 @@ Based on the context, answer accurately. and also add that should people use thi
   }
 });
 
-
-
 const vectorStore = new AstraDBVectorStore(embeddings, {
   token: process.env.ASTRA_DB_APPLICATION_TOKEN,
   endpoint: process.env.ASTRA_DB_ENDPOINT,
   collection: "posts_info_v2",   // existing collection name
   skipCollectionProvisioning: true,
 });
-await vectorStore.initialize();
 
 
 
