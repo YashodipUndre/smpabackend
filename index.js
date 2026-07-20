@@ -92,8 +92,13 @@ await vectorStore.initialize();
 
 
 // Export the server as a handler for Vercel
-const HOST = process.env.HOST || '0.0.0.0';
-const PORT = process.env.PORT || 8080;
-server.listen(PORT, HOST, () => {
-  console.log(`Server running at http://${HOST}:${PORT}/`);
-});
+export default server;
+
+// Only start the server if not running on Vercel
+if (process.env.NODE_ENV !== 'production') {
+  const HOST = process.env.HOST || '0.0.0.0';
+  const PORT = process.env.PORT || 8080;
+  server.listen(PORT, HOST, () => {
+    console.log(`Server running at http://${HOST}:${PORT}/`);
+  });
+}
