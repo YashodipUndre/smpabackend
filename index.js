@@ -15,18 +15,15 @@ server.use(cors());
 server.use(bodyParser.json());
 
 const embeddings = new GoogleGenerativeAIEmbeddings({
-  model: "models/text-embedding-004",
+  model: "gemini-embedding-001",
   apiKey: process.env.GOOGLE_API_KEY,
 });
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
 const model = genAI.getGenerativeModel({
-  model: "gemini-2.5-flash",
+  model: "gemini-3-flash-preview",
 });
 
-// ------------------------------------------------------
-// 2. LOAD FILE
-// ------------------------------------------------------
 // const rawText = fs.readFileSync("extended_social_media_dataset.csv", "utf8");
 
 // // ------------------------------------------------------
@@ -58,7 +55,7 @@ const model = genAI.getGenerativeModel({
 //     keyspace: process.env.ASTRA_DB_KEYSPACE,
 //     collectionOptions: {
 //       vector: {
-//         dimension: 768,
+//         dimension: 3072,
 //         metric: "cosine"
 //       }
 //     }
@@ -106,10 +103,11 @@ Based on the context, answer accurately. and also add that should people use thi
 const vectorStore = new AstraDBVectorStore(embeddings, {
   token: process.env.ASTRA_DB_APPLICATION_TOKEN,
   endpoint: process.env.ASTRA_DB_ENDPOINT,
-  collection: "posts_info",   // existing collection name
+  collection: "posts_info_v2",   // existing collection name
   skipCollectionProvisioning: true,
 });
 await vectorStore.initialize();
+
 
 
 
