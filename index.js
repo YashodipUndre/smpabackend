@@ -14,13 +14,9 @@ const server = express();
 server.use(cors());
 server.use(bodyParser.json());
 
-const embeddings = new GoogleGenerativeAIEmbeddings({
-  model: "gemini-embedding-001",
-  apiKey: process.env.GOOGLE_API_KEY,
-});
-
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
-
+let embeddings = null;
+let genAI = null;
+let vectorStore = null;
 // Fallback model list — each model gets ~20 free requests/day
 const GEMINI_MODELS = [
   "gemini-3.1-flash-lite",
@@ -61,6 +57,27 @@ server.post('/AIDATA', async (req, res) => {
     }
 
     if (!isVectorStoreInitialized) {
+      if (!process.env.GOOGLE_API_KEY) {
+        throw new Error("Missing GOOGLE_API_KEY environment variable");
+      }
+      if (!process.env.ASTRA_DB_APPLICATION_TOKEN) {
+        throw new Error("Missing ASTRA_DB_APPLICATION_TOKEN environment variable");
+      }
+
+      embeddings = new GoogleGenerativeAIEmbeddings({
+        model: "gemini-embedding-001",
+        apiKey: process.env.GOOGLE_API_KEY,
+      });
+
+      genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
+
+      vectorStore = new AstraDBVectorStore(embeddings, {
+        token: process.env.ASTRA_DB_APPLICATION_TOKEN,
+        endpoint: process.env.ASTRA_DB_ENDPOINT,
+        collection: "posts_info_v2",
+        skipCollectionProvisioning: true,
+      });
+
       await vectorStore.initialize();
       isVectorStoreInitialized = true;
     }
@@ -88,17 +105,6 @@ Based on the context, answer accurately. and also add that should people use thi
     res.status(500).json({ error: 'Internal server error' });
   }
 });
-
-const vectorStore = new AstraDBVectorStore(embeddings, {
-  token: process.env.ASTRA_DB_APPLICATION_TOKEN,
-  endpoint: process.env.ASTRA_DB_ENDPOINT,
-  collection: "posts_info_v2",   // existing collection name
-  skipCollectionProvisioning: true,
-});
-
-
-
-
 
 // Export the server as a handler for Vercel
 export default server;
